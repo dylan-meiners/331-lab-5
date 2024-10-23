@@ -11,5 +11,5 @@ bool waitDuration(long duration) {
     startTime = millis();
     reset = false;
   }
-  return (millis() - startTime) >= duration;
+  return (long)(millis() - startTime) >= duration;
 }
