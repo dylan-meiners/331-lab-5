@@ -8,25 +8,27 @@
 #include "slew.h"
 #include "timer.h"
 
-#define CALIBRATE_ONLY
+// #define CALIBRATE_ONLY
+// #define USE_PREDETERMINED_OFFSETS
 
 // State
+#ifdef USE_PREDETERMINED_OFFSETS
+int state = 1;
+#else
 int state = 0;
+#endif
 
 // 0 = gather calibration data
-#define CALIBRATE_TIME_S 30
+#define CALIBRATE_TIME_S 10
 
 // 1 = apply offsets
 
 // 2 = slew to heading slow
-#define TRY_SLEW_HEADING_SLOW_TIME_S 15
+#define TRY_SLEW_HEADING_SLOW_TIME_S 10
 
 // 2 = slew to heading fast
-#define TRY_SLEW_HEADING_TIME_S 10
-double slewHeading;
-
-// 3 = wait
-#define WAIT_FOR_NEXT_SLEW_TIME_S 10
+#define TRY_SLEW_HEADING_TIME_S 3
+double slewHeading = 0;
 
 // 4 = output heading
 
@@ -44,14 +46,25 @@ void loop() {
   switch (state) {
     case 0: {
       if (waitDuration(CALIBRATE_TIME_S * 1000)) {
-        printf("Switching states; going to 1\n");
+        Serial.println("Switching states; going to 1\n");
+        setRW(1);
+        delay(100);
+        setRW(-1);
+        delay(100);
+        setRW(0);
+        delay(5000);
         state = 1;
         break;
       }
       gatherMagDataLoop();
-      printf(
-          "Mag max/mins are: Min X = %f  Max X = %f  Min Y = %f  Max Y = %f\n",
-          minX, maxX, minY, maxY);
+      Serial.print("Mag max/mins are: Min X = ");
+      Serial.print(minX);
+      Serial.print("  Max X = ");
+      Serial.print(maxX);
+      Serial.print("  Min Y = ");
+      Serial.print(minY);
+      Serial.print("  Max Y = ");
+      Serial.println(maxY);
       break;
     }
     case 1: {
@@ -59,61 +72,57 @@ void loop() {
       double ySpread = maxY - minY;
       double offsetX = maxX - xSpread / 2;
       double offsetY = maxY - ySpread / 2;
-      printf("Mag offsets are: X Offset = %f  Y Offset = %f\n", offsetX,
-             offsetY);
+      Serial.print("Mag offsets are: X Offset = ");
+      Serial.print(offsetX);
+      Serial.print("  Y Offset = ");
+      Serial.println(offsetY);
 
 #ifdef CALIBRATE_ONLY
-      printf("Switching states; going to 5\n");
+      Serial.println("Switching states; going to 5");
+      delay(5000);
       state = 5;
 #else
-      printf("Switching states; going to 3\n");
-      slewHeading = 0;
+      Serial.println("Switching states; going to 2");
       resetTimer();
-      state = 3;
+      state = 2;
 #endif
       break;
     }
     case 2: {
       if (waitDuration(TRY_SLEW_HEADING_SLOW_TIME_S * 1000)) {
-        printf("Switching states; going to 3\n");
-        state = 3;
-        resetTimer();
-        break;
-      }
-      slewToHeadingSlow(0);
-      break;
-    }
-    case 3: {
-      slewToHeadingFast(slewHeading);
-      if (waitDuration(TRY_SLEW_HEADING_TIME_S * 1000)) {
-        printf("Switching states; going to 4\n");
-        state = 4;
-        resetTimer();
-        break;
-      }
-      break;
-    }
-    case 4: {
-      if (waitDuration(WAIT_FOR_NEXT_SLEW_TIME_S * 1000)) {
-        printf("Switching states; going to %d\n", 2);
-        state = 3;
+        Serial.println("Switching states; going to 3");
         if (slewHeading == 0) {
           slewHeading = 180;
         } else {
           slewHeading = 0;
         }
+        state = 3;
         resetTimer();
         break;
       }
+      slewToHeadingSlow(slewHeading);
+      break;
+    }
+    case 3: {
+      if (waitDuration(TRY_SLEW_HEADING_TIME_S * 1000)) {
+        Serial.println("Switching states; going to 4");
+        state = 2;
+        resetTimer();
+        break;
+      }
+      slewToHeadingFast(slewHeading);
       break;
     }
     case 5: {
       double heading = GetHeading();
-      printf("Heading: %f deg\n", heading);
+      Serial.print("Heading: ");
+      Serial.print(heading);
+      Serial.println(" deg");
       break;
     }
     default:
-      printf("Defaulting state switch; state is %d\n", state);
+      Serial.print("Defaulting state switch; state is ");
+      Serial.println(state);
       break;
   }
 }

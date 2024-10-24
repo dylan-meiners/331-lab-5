@@ -6,15 +6,30 @@
 float rwSetpoint = 0;
 
 void slewToHeadingSlow(double targetHeading) {
+  Serial.println(targetHeading);
   // Output a relatively low power to the motor and wait until we're at the
   // right angle to stop. Does not know how to go the short way passing 360 ->
   // 0.
   double delta = GetHeading() - targetHeading;
-  if (abs(delta) < SLOW_SLEW_DEADZONE) {
+  if (delta > 180) {
+    delta = -(360 - delta);
+  }
+  if (abs(delta) < SLOW_SLEW_DEADZONE_CLOSE) {
     setRW(0);
   } else {
+    double mag;
+    if (abs(delta) < SLOW_SLEW_DEADZONE_FAR) {
+      mag = 0.1;
+    } else {
+      mag = 0.2;
+    }
+
     int sign = delta / abs(delta);
-    setRW(SLOW_SLEW_OUTPUT * sign);
+    double output = mag * sign;
+    setRW(output);
+    Serial.print(delta);
+    Serial.print(" ");
+    Serial.println(output);
   }
 }
 
@@ -40,7 +55,7 @@ void slewToHeadingFast(double targetHeading) {
 
   if (targetHeading == 0) {
     // If not halfway there yet
-    if (currentHeading >= 90) {
+    if (currentHeading >= 90 && currentHeading <= 300) {
       setRW(1);  // TODO: This may change in practice
     }
     // If over half way there, stop the motor
@@ -62,3 +77,5 @@ void slewToHeadingFast(double targetHeading) {
     }
   }
 }
+
+void slewToHeadingCutoff(double targetHeading) {}

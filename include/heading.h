@@ -3,10 +3,10 @@
 #include <SPI.h>
 
 Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28, &Wire);
-double maxX;
-double minX;
-double maxY;
-double minY;
+double maxX = 18.5;
+double minX = 16.56;
+double maxY = 15.69;
+double minY = -12.38;
 double offsetX;
 double offsetY;
 
@@ -17,6 +17,14 @@ void setupBNO() {
   }
 
   bno.setExtCrystalUse(true);
+
+  long startTime = millis();
+  Serial.println("Getting heading and not recording for 5 seconds...");
+  while (millis() - startTime <= 5000) {
+    auto _ = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+  }
+
+  Serial.println("BNO055 setup complete");
 }
 
 // Gathers the max and min values of each mag axis
@@ -53,5 +61,7 @@ double GetHeading() {
   x *= 180.0 / maxX;
   y *= 180.0 / maxY;
 
-  return atan2(y, x);
+  double original = atan2(y, x) * 180 / M_PI;
+
+  return original > 0 ? original : original + 360.0;
 }

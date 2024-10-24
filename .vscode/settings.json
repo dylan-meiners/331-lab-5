@@ -1,4 +1,7 @@
 {
   "editor.defaultFormatter": "ms-vscode.cpptools",
-  "C_Cpp.clang_format_fallbackStyle": "{BasedOnStyle: Google}"
+  "C_Cpp.clang_format_fallbackStyle": "{BasedOnStyle: Google}",
+  "files.associations": {
+    "cmath": "cpp"
+  }
 }
