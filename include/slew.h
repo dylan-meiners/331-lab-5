@@ -6,7 +6,6 @@
 float rwSetpoint = 0;
 
 void slewToHeadingSlow(double targetHeading) {
-  Serial.println(targetHeading);
   // Output a relatively low power to the motor and wait until we're at the
   // right angle to stop. Does not know how to go the short way passing 360 ->
   // 0.
@@ -27,9 +26,6 @@ void slewToHeadingSlow(double targetHeading) {
     int sign = delta / abs(delta);
     double output = mag * sign;
     setRW(output);
-    Serial.print(delta);
-    Serial.print(" ");
-    Serial.println(output);
   }
 }
 

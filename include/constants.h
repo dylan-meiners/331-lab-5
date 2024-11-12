@@ -11,6 +11,5 @@ constexpr const double RW_MAX_ACCEL_RAD_S_S =
 constexpr const double RW_TORQUE =
     ROTOR_MASS_MOMENT_INERTIA * RW_MAX_ACCEL_RAD_S_S;  // N.m
 
-constexpr const double SLOW_SLEW_OUTPUT = 0.15;
-constexpr const double SLOW_SLEW_DEADZONE_CLOSE = 5;  // degrees
-constexpr const double SLOW_SLEW_DEADZONE_FAR = 10;   // degrees
+constexpr const double SLOW_SLEW_DEADZONE_CLOSE = 2;  // degrees
+constexpr const double SLOW_SLEW_DEADZONE_FAR = 15;   // degrees

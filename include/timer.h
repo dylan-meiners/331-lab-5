@@ -8,9 +8,9 @@ long startTime;
 void resetTimer() { reset = true; }
 bool waitDuration(long duration) {
   if (reset) {
-    Serial.print("Starting timer for ");
-    Serial.print(duration);
-    Serial.println(" ms");
+    String str =
+        String("Starting timer for ") + String(duration) + String(" ms");
+    logMessageEverywhere(str);
     startTime = millis();
     reset = false;
   }
