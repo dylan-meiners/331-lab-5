@@ -17,3 +17,11 @@ void setRW(float out) {
   outVal = out;
   driver.setOutput(-outVal);
 }
+
+void pulseRW() {
+  setRW(1);
+  delay(100);
+  setRW(-1);
+  delay(100);
+  setRW(0);
+}

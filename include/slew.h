@@ -29,7 +29,7 @@ void slewToHeadingSlow(double targetHeading) {
   }
 }
 
-void slewToHeadingFast(double targetHeading) {
+void slewToHeadingFast(double targetHeading, bool* stopped) {
   // Note: only works with headings of 0 and 180 deg, and assumes we are
   // starting from the other heading
 
@@ -37,40 +37,20 @@ void slewToHeadingFast(double targetHeading) {
   // accelerate while spinning up and slowing down at the same magnitude. This
   // allows for us to use the equation relating T_slew and time. We also assume
   // that the reaction wheel does not reach maximum angular velocity at any
-  // point during the maneuver. Use a simple state machine to control the flow.
-  // This is the procedure:
-  // 1. Determine which direction to spin the motor (state 0)
-  // 2. Set the motor's output to max. This will result in maximum angular
-  // acceleration. (state 1)
-  // 3. Wait until we are half way from the initial heading to the final
-  // heading. (state 1)
-  // 4. Set the motor's output to zero. This will result in maximum angular
-  // acceleration in the negative direction. (state 1)
+  // point during the maneuver.
 
   double currentHeading = GetHeading();
 
-  if (targetHeading == 0) {
-    // If not halfway there yet
-    if (currentHeading >= 90 && currentHeading <= 300) {
-      setRW(1);  // TODO: This may change in practice
-    }
-    // If over half way there, stop the motor
-    else {
-      setRW(0);
-    }
+  // If not halfway there yet
+  // The angle could be from a little less than zero; assume worst case it is
+  // 300 deg
+  if (currentHeading <= (targetHeading / 2.0) || currentHeading >= 300) {
+    setRW(-1);  // TODO: This may change in practice
   }
-  // If going to 180 degrees heading
+  // If over half way there, stop the motor
   else {
-    // If not halfway there yet
-    // The angle could be from a little less than zero; assume worst case it is
-    // 300 deg
-    if (currentHeading <= 90 || currentHeading >= 300) {
-      setRW(-1);  // TODO: This may change in practice
-    }
-    // If over half way there, stop the motor
-    else {
-      setRW(0);
-    }
+    setRW(0);
+    *stopped = true;
   }
 }
 
